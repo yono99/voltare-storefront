@@ -1,5 +1,7 @@
 "use client";
 
+import { LupaIcon } from "@/components/lupa-icon";
+
 import { useMemo, useState } from "react";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import type { Product } from "@/lib/types";
@@ -163,7 +165,7 @@ export function CatalogView({
  <div>
  <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
  <div className="relative flex-1">
- <
+ <LupaIcon
  size={17}
  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-500"
  />

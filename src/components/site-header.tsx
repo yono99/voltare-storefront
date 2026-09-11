@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Menu, Search, ShoppingCart, User, X } from "lucide-react";
 import { useState } from "react";
 import { categories } from "@/lib/data";
+import { LupaIcon } from "@/components/lupa-icon";
 import { useCart } from "@/lib/cart";
 import { clsx } from "clsx";
 
@@ -62,7 +63,7 @@ export function SiteHeader() {
 
  <div className="ml-auto flex items-center gap-2">
  <Link href="/produtos" className="btn-subtle px-2.5 py-2" aria-label="Buscar produtos">
- < size={18} />
+ <LupaIcon size={18} />
  </Link>
  <Link href="/conta" className="btn-subtle px-2.5 py-2" aria-label="Minha conta">
  <User size={18} />
@@ -81,7 +82,7 @@ export function SiteHeader() {
  {mobileOpen && (
  <div className="border-t border-ink-800 bg-ink-950 lg:hidden">
  <div className="container-page flex items-center gap-3 py-3">
- < size={18} className="text-ink-400" />
+ <LupaIcon size={18} className="text-ink-400" />
  <input
  type="text"
  placeholder="Buscar produtos..."
