@@ -79,8 +79,17 @@ export function SiteHeader() {
  </div>
 
  {mobileOpen && (
- <nav className="border-t border-ink-800 bg-ink-950 lg:hidden" aria-label="Categorias (mobile)">
- <div className="container-page flex flex-col py-2">
+ <div className="border-t border-ink-800 bg-ink-950 lg:hidden">
+ <div className="container-page flex items-center gap-3 py-3">
+ < size={18} className="text-ink-400" />
+ <input
+ type="text"
+ placeholder="Buscar produtos..."
+ className="w-full bg-transparent text-sm text-white outline-none placeholder:text-ink-500"
+ aria-label="Buscar produtos"
+ />
+ </div>
+ <nav className="container-page flex flex-col pb-2" aria-label="Categorias (mobile)">
  {nav.map((item) => (
  <Link
  key={item.href}
@@ -91,8 +100,8 @@ export function SiteHeader() {
  {item.label}
  </Link>
  ))}
- </div>
  </nav>
+ </div>
  )}
  </header>
  );
