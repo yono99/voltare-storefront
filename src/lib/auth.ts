@@ -1,11 +1,10 @@
-import "server-only";
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 import { randomUUID, scryptSync, randomBytes, timingSafeEqual } from "node:crypto";
 import type { Customer } from "./types";
 
 const SESSION_COOKIE = "voltare_session";
-const SESSION_MAX_AGE =60 *60 *24 *30; //30 days
+const SESSION_MAX_AGE =60 *60 *24 *30;
 
 const secret = new TextEncoder().encode(
  process.env.AUTH_SECRET ?? "voltare-dev-secret-change-me-in-production",
@@ -13,8 +12,6 @@ const secret = new TextEncoder().encode(
 
 type StoredCustomer = Customer & { passwordHash: string };
 
-// In-memory store. Swap for the shared Postgres `customers` table (see
-// database/migrations/001_init.sql) once a DATABASE_URL is provisioned.
 declare global {
  // eslint-disable-next-line no-var
  var __voltareCustomers: Map<string, StoredCustomer> | undefined;
