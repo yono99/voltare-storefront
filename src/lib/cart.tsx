@@ -117,7 +117,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
  );
 
  const shippingCents = useMemo(() => {
- if (subtotalCents ===0) return0;
+ if (subtotalCents ===0) return 0;
  return subtotalCents >= FREE_SHIPPING_THRESHOLD ?0 : FLAT_SHIPPING;
  }, [subtotalCents]);
 
