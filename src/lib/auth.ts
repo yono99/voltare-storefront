@@ -6,9 +6,21 @@ import type { Customer } from "./types";
 const SESSION_COOKIE = "voltare_session";
 const SESSION_MAX_AGE =60 *60 *24 *30;
 
-const secret = new TextEncoder().encode(
- process.env.AUTH_SECRET ?? "voltare-dev-secret-change-me-in-production",
-);
+const AUTH_SECRET_FALLBACK = "voltare-dev-secret-change-me-in-production";
+
+let cachedSecret: Uint8Array | null = null;
+
+// Lazy + fail closed: fallback yang terkompasi di sumber memungkinkan siapa saja
+// memalsukan token sesi bila AUTH_SECRET lupa di-set di produksi.
+function getSecret(): Uint8Array {
+  if (cachedSecret) return cachedSecret;
+  const configured = process.env.AUTH_SECRET;
+  if (!configured && process.env.NODE_ENV === "production") {
+    throw new Error("AUTH_SECRET must be set in production");
+  }
+  cachedSecret = new TextEncoder().encode(configured ?? AUTH_SECRET_FALLBACK);
+  return cachedSecret;
+}
 
 type StoredCustomer = Customer & { passwordHash: string };
 
@@ -41,7 +53,7 @@ export async function createSessionToken(customerId: string): Promise<string> {
  .setProtectedHeader({ alg: "HS256" })
  .setIssuedAt()
  .setExpirationTime(`${SESSION_MAX_AGE}s`)
- .sign(secret);
+ .sign(getSecret());
 }
 
 export async function setSessionCookie(customerId: string): Promise<void> {
@@ -66,7 +78,7 @@ export async function getCurrentCustomer(): Promise<Customer | null> {
  const token = jar.get(SESSION_COOKIE)?.value;
  if (!token) return null;
  try {
- const { payload } = await jwtVerify(token, secret);
+ const { payload } = await jwtVerify(token, getSecret());
  const id = payload.sub;
  if (!id) return null;
  const found = store.get(id);
