@@ -10,6 +10,7 @@ import {
 } from "react";
 import type { CartLine, Product } from "./types";
 import { products } from "./data";
+import { shippingRules } from "./cart-rules";
 
 const STORAGE_KEY = "voltare.cart.v1";
 
@@ -34,9 +35,6 @@ type CartContextValue = {
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
-
-const FREE_SHIPPING_THRESHOLD =29900;
-const FLAT_SHIPPING =2490;
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
  const [lines, setLines] = useState<CartLine[]>([]);
@@ -118,7 +116,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
  const shippingCents = useMemo(() => {
  if (subtotalCents ===0) return 0;
- return subtotalCents >= FREE_SHIPPING_THRESHOLD ?0 : FLAT_SHIPPING;
+ return subtotalCents >= shippingRules.FREE_SHIPPING_THRESHOLD ? 0 : shippingRules.FLAT_SHIPPING;
  }, [subtotalCents]);
 
  const value: CartContextValue = {
@@ -144,4 +142,4 @@ export function useCart(): CartContextValue {
  return ctx;
 }
 
-export const shippingRules = { FREE_SHIPPING_THRESHOLD, FLAT_SHIPPING };
+export { shippingRules };

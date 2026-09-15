@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { products } from "@/lib/data";
-import { shippingRules } from "@/lib/cart-rules";
+import { computeTotals } from "@/lib/cart-rules";
 
 const orderSchema = z.object({
  paymentMethod: z.enum(["pix", "credito", "boleto"]),
@@ -53,38 +53,47 @@ export async function POST(request: Request) {
 
  const { items, paymentMethod } = parsed.data;
 
- let subtotalCents =0;
+ const quantityByProductId = new Map<string, number>();
+ for (const line of items) {
+ quantityByProductId.set(
+ line.productId,
+ (quantityByProductId.get(line.productId) ?? 0) + line.quantity,
+ );
+ }
+
+ let subtotalCents = 0;
  const resolvedItems = [];
 
- for (const line of items) {
- const product = products.find((p) => p.id === line.productId);
+ // Stok diuji terhadap total per produk, bukan per baris: klien bisa mengirim
+ // productId yang sama dua kali dan melewati pemeriksaan bila baris tidak digabung.
+ for (const [productId, quantity] of quantityByProductId) {
+ const product = products.find((p) => p.id === productId);
  if (!product) {
  return NextResponse.json(
- { error: `Produto não encontrado: ${line.productId}` },
- { status:404 },
+ { error: `Produto não encontrado: ${productId}` },
+ { status: 404 },
  );
  }
- if (product.stock < line.quantity) {
+ if (product.stock < quantity) {
  return NextResponse.json(
  { error: `Estoque insuficiente para ${product.name}.` },
- { status:409 },
+ { status: 409 },
  );
  }
- subtotalCents += product.priceCents * line.quantity;
+ subtotalCents += product.priceCents * quantity;
  resolvedItems.push({
  productId: product.id,
  sku: product.sku,
  name: product.name,
  unitPriceCents: product.priceCents,
- quantity: line.quantity,
+ quantity,
  });
  }
 
- const shippingCents =
- subtotalCents >= shippingRules.FREE_SHIPPING_THRESHOLD ?0 : shippingRules.FLAT_SHIPPING;
-
- const discountCents = paymentMethod === "pix" ? Math.round(subtotalCents *0.1) :0;
- const totalCents = subtotalCents - discountCents + shippingCents;
+ const { shippingCents, discountCents, totalCents } = computeTotals({
+ subtotalCents,
+ paymentMethod,
+ });
 
  const orderNumber = generateOrderNumber();
 

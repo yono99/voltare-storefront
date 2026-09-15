@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Check, CreditCard, Landmark, QrCode } from "lucide-react";
 import { useCart } from "@/lib/cart";
+import { computeTotals, type PaymentMethod } from "@/lib/cart-rules";
 import { formatBRL } from "@/lib/format";
 import { clsx } from "clsx";
 
@@ -18,9 +19,11 @@ const steps: { key: Step; label: string }[] = [
 
 export default function CheckoutPage() {
  const router = useRouter();
- const { items, subtotalCents, shippingCents, totalCents, clear, isHydrated } = useCart();
+ const { items, subtotalCents, shippingCents, clear, isHydrated } = useCart();
  const [step, setStep] = useState<Step>("entrega");
- const [payment, setPayment] = useState("pix");
+ const [payment, setPayment] = useState<PaymentMethod>("pix");
+
+ const totals = computeTotals({ subtotalCents, paymentMethod: payment });
  const [submitting, setSubmitting] = useState(false);
  const [error, setError] = useState<string | null>(null);
  const [orderNumber, setOrderNumber] = useState<string | null>(null);
@@ -256,7 +259,7 @@ export default function CheckoutPage() {
  name="payment"
  value={id}
  checked={payment === id}
- onChange={() => setPayment(id)}
+ onChange={() => setPayment(id as PaymentMethod)}
  className="h-4 w-4 accent-brand"
  />
  <Icon size={22} className={payment === id ? "text-brand" : "text-ink-400"} />
@@ -344,9 +347,15 @@ export default function CheckoutPage() {
  {shippingCents ===0 ? "Grátis" : formatBRL(shippingCents)}
  </dd>
  </div>
+ {totals.discountCents > 0 && (
+ <div className="flex justify-between">
+ <dt className="text-ink-400">Desconto PIX</dt>
+ <dd className="font-medium text-emerald-400">-{formatBRL(totals.discountCents)}</dd>
+ </div>
+ )}
  <div className="flex justify-between border-t border-ink-800 pt-3">
  <dt className="font-semibold text-white">Total</dt>
- <dd className="text-xl font-black text-white">{formatBRL(totalCents)}</dd>
+ <dd className="text-xl font-black text-white">{formatBRL(totals.totalCents)}</dd>
  </div>
  </dl>
  </aside>
